@@ -34,6 +34,7 @@ IAM ロールの信頼関係設定や Snowflake Storage Integration の外部 ID
 
 ## 📂 ディレクトリ構成
 
+<pre><code>
 .
 ├── aws
 │ ├── backend.tf
@@ -55,6 +56,7 @@ IAM ロールの信頼関係設定や Snowflake Storage Integration の外部 ID
 │ └── terraform.tfstate.backup
 ├── setup.sh # セットアップ用スクリプト（IAM ロール作成・import 等）
 └── README.md
+</code></pre>
 
 ---
 
@@ -62,27 +64,27 @@ IAM ロールの信頼関係設定や Snowflake Storage Integration の外部 ID
 
 1. AWS CLI でダミー IAM ロールと S3 バケットを作成
 
-```bash
+<pre><code>
 cd aws
 
 aws iam create-role --role-name SnowflakeRole --assume-role-policy-document file://trust-policy.json
 
 aws s3api create-bucket --bucket karasuit-etl-bucket --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
-```
+</code></pre>
 
 2. Terraform にてリソースを import
 
-```bash
+<pre><code>
 terraform import module.s3_snowpipe.aws_iam_role.snowflake_role SnowflakeRole
 
 terraform import module.s3_snowpipe.aws_s3_bucket.etl-bucket karasuit-etl-bucket
-```
+</code></pre>
 
 3. Snowflake 以外の Terraform リソースを apply
 
+<pre><code>
 cd ../snowflake
 
-```bash
 terraform apply -target=snowflake_warehouse.warehouse \
                 -target=snowflake_database.netflix_database \
                 -target=snowflake_schema.netflix_schema \
@@ -90,37 +92,37 @@ terraform apply -target=snowflake_warehouse.warehouse \
                 -target=snowflake_storage_integration.s3_int \
                 -target=snowflake_stage.s3_stage \
                 --auto-approve
-```
+</code></pre>
 
 4. Snowflake Integration から IAM ユーザー ARN と External ID を取得
 
-```bash
+<pre><code>
 snowsql -c karasuit -q "DESC INTEGRATION S3_INT;" | grep STORAGE_AWS_IAM_USER_ARN
 
 snowsql -c karasuit -q "DESC INTEGRATION S3_INT;" | grep STORAGE_AWS_EXTERNAL_ID
-```
+</code></pre>
 
 5. 取得した値を aws/locals.tf にセット
 6. IAM ロールの信頼ポリシーを修正し、Terraform で IAM ロールを apply
 
-```bash
+<pre><code>
 terraform apply -target=module.s3_snowpipe.aws_iam_role.snowflake_role --auto-approve
-```
+</code></pre>
 
 7. Snowflake の PIPE を作成
 
-```bash
+<pre><code>
 cd ../snowflake
 
 terraform apply --auto-approve
-```
+</code></pre>
 
 8. PIPE の Notification Channel（SQS ARN）を取得し aws/locals.tf の notification_channel に反映
 9. aws フォルダで S3 バケット通知設定を apply
 
-```bash
+<pre><code>
 terraform apply --auto-approve
-```
+</code></pre>
 
 10. S3 にファイルをアップロードし Snowpipe の自動データロードを確認
 
