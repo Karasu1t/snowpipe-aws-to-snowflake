@@ -1,0 +1,12 @@
+# Terraform 関連の一時ファイルとキャッシュ
+.terraform/
+_.tfstate
+_.tfstate.\*
+envs/aws/.terraform.lock.hcl
+envs/snowflake/.terraform.lock.hcl
+
+# ローカル変数ファイル
+envs/dev/snowflake/locals.tf
+
+# GithubActionsにて自動生成される認証ファイル
+gha-creds-*.json
